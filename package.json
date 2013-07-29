@@ -1,0 +1,9 @@
+{
+  "name": "HipFM",
+  "version": "1.0.0",
+  "repository": "none",
+  "readme": "none",
+  "dependencies": {
+    "lodash": "~1.3.1"
+  }
+}
