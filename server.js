@@ -30,12 +30,11 @@ function processData(data) {
         var html = '';
 
         if (currentTrack.image[1]['#text'] !== '') {
-            html += '<img src="' + currentTrack.image[1]['#text'] + '" />';
+            html += '<img src="' + currentTrack.image[1]['#text'] + '" height="32"/>';
         }
-
+        html += '<span>&nbsp;&nbsp;</span>';
         html += '<a href="' + currentTrack.url + '">' + currentTrack.name + '</a>';
-        html += '<br>';
-        html += currentTrack.artist['#text'] + ' - ' + currentTrack.album['#text'];
+        html += ' - ' + currentTrack.artist['#text'] + ', ' + currentTrack.album['#text'];
 
         sendToHipChat(html);
         lastTrack = currentTrack.name;
@@ -47,7 +46,7 @@ function processData(data) {
 
 function sendToHipChat(message) {
     message = encodeURIComponent(message);
-    var url = 'https://api.hipchat.com/v1/rooms/message?format=json&auth_token=17622a65877a7b2c47a2a56164b9da&room_id=HipFM&from=HipFM&color=random&message_format=html&message=' + message;
+    var url = 'https://api.hipchat.com/v1/rooms/message?format=json&auth_token=17622a65877a7b2c47a2a56164b9da&room_id=HipFM&from=HipFM&color=purple&message_format=html&message=' + message;
 
     https.get(url, function(httpRes) {
         var data = '';
