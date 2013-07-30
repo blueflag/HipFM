@@ -47,7 +47,8 @@ function processData(data) {
         }
         html += '<span>&nbsp;&nbsp;</span>';
         html += '<a href="' + currentTrack.url + '">' + currentTrack.name + '</a>';
-        html += ' - ' + currentTrack.artist['#text'] + ', ' + currentTrack.album['#text'];
+        html += ' - <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '">' + currentTrack.artist['#text'] + '</a>';
+        html += ', <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '/'+ currentTrack.album['#text'] + '">' + currentTrack.album['#text'] + '</a>';
 
         sendToHipChat(html);
         lastTrack = currentTrack.name;
