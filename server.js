@@ -1,3 +1,14 @@
+if (process.argv.length < 6) {
+    console.log('Usage: node server.js ' + ' [Last.fm Api Key] [Last.fm User] [HipChat Admin/Notification Key] [Room] [Display Name]');
+    process.exit(1);
+}
+
+var HIPCHAT_AUTH_TOKEN = process.argv[4],
+    HIPCHAT_ROOM = process.argv[5],
+    HIPCHAT_DISPLAY_NAME = process.argv[6] || 'HipFM',
+    LASTFM_API = process.argv[2],
+    LASTFM_USER = process.argv[3];
+
 var _ = require('lodash'),
     util = require('util'),
     http = require('http'),
@@ -6,7 +17,9 @@ var _ = require('lodash'),
 var lastTrack = '';
 
 function checkTracks() {
-    http.get("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=blueflagmusic&api_key=1f1ac5c48e40633e23f6e09aa2341a84&format=json&limit=10", function(httpRes) {
+    var lastfmURL = 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + LASTFM_USER + '&api_key=' + LASTFM_API + '&format=json&limit=10';
+
+    http.get(lastfmURL, function(httpRes) {
         var data = '';
 
         httpRes.on('data', function (chunk){
@@ -46,7 +59,7 @@ function processData(data) {
 
 function sendToHipChat(message) {
     message = encodeURIComponent(message);
-    var url = 'https://api.hipchat.com/v1/rooms/message?format=json&auth_token=17622a65877a7b2c47a2a56164b9da&room_id=HipFM&from=HipFM&color=purple&message_format=html&message=' + message;
+    var url = 'https://api.hipchat.com/v1/rooms/message?format=json&auth_token=' + HIPCHAT_AUTH_TOKEN + '&room_id=' + HIPCHAT_ROOM + '&from=' + HIPCHAT_DISPLAY_NAME + '&color=purple&message_format=html&message=' + message;
 
     https.get(url, function(httpRes) {
         var data = '';
