@@ -37,23 +37,26 @@ function checkTracks() {
 }
 
 function processData(data) {
-    var currentTrack = data.recenttracks.track[0];
+    if (data.recenttracks && data.recenttracks.track) {
+        var currentTrack = data.recenttracks.track[0];
 
-    if (lastTrack != currentTrack.name) {
-        var html = '';
+        if (lastTrack != currentTrack.name) {
+            var html = '';
 
-        if (currentTrack.image[1]['#text'] !== '') {
-            html += '<img src="' + currentTrack.image[1]['#text'] + '" height="32"/>';
-        }
-        html += '<span>&nbsp;&nbsp;</span>';
-        html += '<a href="' + currentTrack.url + '">' + currentTrack.name + '</a>';
-        html += ' - <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '">' + currentTrack.artist['#text'] + '</a>';
-        html += ', <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '/'+ currentTrack.album['#text'] + '">' + currentTrack.album['#text'] + '</a>';
+            if (currentTrack.image[1]['#text'] !== '') {
+                html += '<img src="' + currentTrack.image[1]['#text'] + '" height="32"/>';
+            }
+            html += '<span>&nbsp;&nbsp;</span>';
+            html += '<a href="' + currentTrack.url + '">' + currentTrack.name + '</a>';
+            html += ' - <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '">' + currentTrack.artist['#text'] + '</a>';
+            html += ', <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '/'+ currentTrack.album['#text'] + '">' + currentTrack.album['#text'] + '</a>';
 
-        sendToHipChat(html);
-        lastTrack = currentTrack.name;
-        util.log(lastTrack + ' - ' + currentTrack.artist['#text'] + ' - ' + currentTrack.album['#text']);
+            sendToHipChat(html);
+            lastTrack = currentTrack.name;
+            util.log(lastTrack + ' - ' + currentTrack.artist['#text'] + ' - ' + currentTrack.album['#text']);
+        }    
     }
+    
 
     fetchTracks();
 }
