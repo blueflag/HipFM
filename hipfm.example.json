@@ -1,0 +1,20 @@
+{
+    "hipchat": {
+        "key": "11111111111111111111111111111111",
+        "room": "Music"
+    },
+    "lastfm": {
+        "users": [
+            {
+                "displayName": "User1Music",
+                "username": "lastfm_username1",
+                "key": ""
+            },
+            {
+                "displayName": "User2Music",
+                "username": "lastfm_user2",
+                "key": "11111111111111111111111111111111"
+            }
+        ]
+    }
+}
