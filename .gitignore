@@ -10,5 +10,6 @@ lib-cov
 pids
 logs
 results
+hipfm.json
 
 npm-debug.log
