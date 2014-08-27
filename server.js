@@ -37,7 +37,14 @@ if(process.argv[2] == '-f') { // We're using a config file
                     "key": process.argv[2]
                 }
             ]
-        }
+        },
+        "dangerZoneMessages": [
+            'BEWARE: Highway to the Danger Zone, Stop Right Now, Thank You Very Much, We Need Somebody with a Human Touch to SKIP.',
+            'BOWIE SAYS: Ch-ch-ch-ch-Changes (Turn and press the skip)',
+            'DEVO SAYS: Skip It, Skip It Good',
+            'B.J SAYS: Skip to My Lou',
+            'Oops You Did It Again, BRITNEY SAYS: Skip'
+        ]
     }
     fetchTracks(true, config);
 }
@@ -121,9 +128,12 @@ function processData(data, dangerzone, userIndex) {
             html += ' - <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '">' + currentTrack.artist['#text'] + '</a>';
             html += ', <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '/'+ currentTrack.album['#text'] + '">' + currentTrack.album['#text'] + '</a>';
 
+
             if(dangerTrack) {
+                var message = config.dangerZoneMessages[Math.floor(Math.random()*config.dangerZoneMessages.length)];
+                util.log(message);
                 color = 'red';
-                html += "<div>&nbsp;&nbsp; This track's on a highway to the DANGER ZONE! Please, somebody skip it.</div>";                
+                html += "<div>&nbsp;&nbsp; "+ message +"</div>";                
             }
 
             sendToHipChat(html, userIndex, color);
