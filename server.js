@@ -6,6 +6,7 @@ var _ = require('lodash'),
 
 var config = {};
 
+
 if(process.argv[2] == '-f') { // We're using a config file
     fs.exists("hipfm.json", function(exists) {
         if (exists) {
@@ -13,7 +14,7 @@ if(process.argv[2] == '-f') { // We're using a config file
             config = (JSON.parse(fs.readFileSync("hipfm.json", "utf8")));
             fetchTracks(true, config);
         } else {
-            console.log('The hipfm.json file does not exist. Please create the file before using the -f flag.');
+            console.log('The hipfm.json file does not exist. Please create the file before using the -f flag.');b
             process.exit(1);
         }
     });
@@ -42,6 +43,8 @@ if(process.argv[2] == '-f') { // We're using a config file
 }
 
 function checkTracks(config) {
+    var tracks = null;
+    var dangerzone = null;
 
     config.lastfm.users.forEach(function(element, index, array){
         var lastfmURL = 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' + config.lastfm.users[index].username + '&api_key=' + config.lastfm.users[index].key + '&format=json&limit=10';
@@ -53,7 +56,27 @@ function checkTracks(config) {
             });
 
             httpRes.on('end',function(){
-                processData(JSON.parse(data), index);
+                tracks = JSON.parse(data);
+                complete(index);
+            });
+
+
+        }).on('error', function(e) {
+            util.log("ERROR::checkTracks " + e.message);
+        });
+
+        // danger zone
+        var dangerZoneUrl = 'http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=' + config.lastfm.users[index].username + '&api_key=' + config.lastfm.users[index].key + '&period=3month&format=json&limit=10';
+        http.get(dangerZoneUrl, function(httpRes) {
+            var data = '';
+
+            httpRes.on('data', function (chunk){
+                data += chunk;
+            });
+
+            httpRes.on('end',function(){
+                dangerzone = JSON.parse(data);
+                complete(index);
             });
 
 
@@ -61,14 +84,35 @@ function checkTracks(config) {
             util.log("ERROR::checkTracks " + e.message);
         });
     });
+
+    function complete(index) {
+        if (tracks !== null && dangerzone !== null) {
+            processData(tracks, dangerzone, index);
+        }
+    }   
+
 }
 
-function processData(data, userIndex) {
+
+
+function processData(data, dangerzone, userIndex) {
     if (data.recenttracks && data.recenttracks.track) {
         var currentTrack = data.recenttracks.track[0];
-        if (config.lastfm.users[userIndex].lastTrack != currentTrack.name) {
-            var html = '';
+        var dangerTracks = dangerzone.toptracks.track;
 
+        if (config.lastfm.users[userIndex].lastTrack != currentTrack.name) {
+
+            var dangerTrack = _.find(dangerTracks, function(track){        
+                if(track.mbid === currentTrack.mbid || track.name === currentTrack.name) {
+                    return track;
+                }
+            });
+            
+            var html = '';
+            var color = 'purple';
+
+            
+            
             if (currentTrack.image[1]['#text'] !== '') {
                 html += '<img src="' + currentTrack.image[1]['#text'] + '" height="32"/>';
             }
@@ -77,7 +121,12 @@ function processData(data, userIndex) {
             html += ' - <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '">' + currentTrack.artist['#text'] + '</a>';
             html += ', <a href="http://www.last.fm/music/'  + currentTrack.artist['#text'] + '/'+ currentTrack.album['#text'] + '">' + currentTrack.album['#text'] + '</a>';
 
-            sendToHipChat(html, userIndex);
+            if(dangerTrack) {
+                color = 'red';
+                html += "<div>&nbsp;&nbsp; This track's on a highway to the DANGER ZONE! Please, somebody skip it.</div>";                
+            }
+
+            sendToHipChat(html, userIndex, color);
             config.lastfm.users[userIndex].lastTrack = currentTrack.name;
             util.log(config.lastfm.users[userIndex].lastTrack + ' - ' + currentTrack.artist['#text'] + ' - ' + currentTrack.album['#text']);
         }    
@@ -88,9 +137,10 @@ function processData(data, userIndex) {
     }
 }
 
-function sendToHipChat(message, userIndex) {
+function sendToHipChat(message, userIndex, color) {
+    color = color || 'purple';
     message = encodeURIComponent(message);
-    var url = 'https://api.hipchat.com/v1/rooms/message?format=json&auth_token=' + config.hipchat.key + '&room_id=' + config.hipchat.room + '&from=' + config.lastfm.users[userIndex].displayName + '&color=purple&message_format=html&message=' + message;
+    var url = 'https://api.hipchat.com/v1/rooms/message?format=json&auth_token=' + config.hipchat.key + '&room_id=' + config.hipchat.room + '&from=' + config.lastfm.users[userIndex].displayName + '&color='+ color +'&message_format=html&message=' + message;
 
     https.get(url, function(httpRes) {
         var data = '';
